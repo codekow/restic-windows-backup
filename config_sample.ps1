@@ -10,6 +10,7 @@ $LogRetentionDays = 30
 $BackupOnMeteredNetwork = $true
 $InternetTestAttempts = 10
 $GlobalRetryAttempts = 4
+$BackupRetryTimeout = 5
 
 # email configuration
 $SendEmailOnSuccess = $false

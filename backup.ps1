@@ -356,6 +356,12 @@ function Send-Email {
         '[[Email]] Warning - $PSEmailServer is deprecated. Define $ResticEmailServer in secrets.ps1 instead.' | Tee-Object -Append $ErrorLog | Tee-Object -Append $SuccessLog | Write-Host
     }
 
+    # Backwards compatibility for $BackupRetryTimeout
+    if ($BackupRetryTimeout -lt 1) {
+        $BackupRetryTimeout = 15
+        '[[Config]] Warning - $BackupRetryTimeout is not setup correctly in config.ps1.' | Tee-Object -Append $ErrorLog | Tee-Object -Append $SuccessLog | Write-Host
+    }
+
     $status = "SUCCESS"
     $past_failure = $false
     $body = ""
@@ -603,7 +609,7 @@ function Invoke-Main {
         # update logs prior to sending email
         if($backup_success -eq $false) {
             if($attempt_count -gt 0) {
-                "[[Backup]] Sleeping for 15 min and then retrying..." | Tee-Object -Append $success_log  | Write-Host
+                "[[Backup]] Sleeping for $BackupRetryTimeout min and then retrying..." | Tee-Object -Append $success_log  | Write-Host
             }
             else {
                 "[[Backup]] Retry limit has been reached. No more attempts to backup will be made." | Tee-Object -Append $success_log | Write-Host
@@ -621,7 +627,7 @@ function Invoke-Main {
 
         # loop exit/wait condition
         if(($backup_success -eq $false) -and ($attempt_count -gt 0)) {
-            Start-Sleep (15*60)
+            Start-Sleep ($BackupRetryTimeout *60)
         }
         else {
             break
@@ -660,7 +666,7 @@ function Invoke-Main {
         # update logs prior to sending email
         if($maintenance_success -eq $false) {
             if($attempt_count -gt 0) {
-                "[[Maintenance]] Sleeping for 15 min and then retrying..." | Tee-Object -Append $success_log | Write-Host
+                "[[Maintenance]] Sleeping for $BackupRetryTimeout min and then retrying..." | Tee-Object -Append $success_log | Write-Host
             }
             else {
                 "[[Maintenance]] Retry limit has been reached. No more attempts to run maintenance will be made." | Tee-Object -Append $success_log | Write-Host
@@ -678,7 +684,7 @@ function Invoke-Main {
 
         # loop exit/wait condition
         if(($maintenance_success -eq $false) -and ($attempt_count -gt 0)) {
-            Start-Sleep (15*60)
+            Start-Sleep ($BackupRetryTimeout*60)
         }
         else {
             break
