@@ -47,7 +47,7 @@ if(-not (Test-Path $ResticExe)) {
     }
 }
 
-# Apply global paramters to $ResticExe, after the $ResticExe has been downloaded/confirmed to exist
+# Apply global parameters to $ResticExe, after the $ResticExe has been downloaded/confirmed to exist
 if(-not [String]::IsNullOrEmpty($GlobalParameters)) {
     $ResticExe = "$ResticExe $GlobalParameters"
 }
