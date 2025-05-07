@@ -96,10 +96,17 @@ function Set-BackupState {
 function Invoke-Unlock {
     Param($SuccessLog, $ErrorLog)
 
+    if($ForceResticUnlock) {
+        "[[Unlock]] Forcing unlock of repository" | Tee-Object -Append $ErrorLog
+    else
+        return $true
+    }
+
     $locks = Invoke-Expression "$Script:ResticExe list locks --no-lock -q 3>&1 2>> $ErrorLog"
     if($LASTEXITCODE) {
         "[[Unlock]] Warning: unable to list locks." | Tee-Object -Append $ErrorLog
     }
+
     if($locks.Length -gt 0) {
         # unlock the repository (assumes this machine is the only one that will ever use it)
         Invoke-Expression "$Script:ResticExe unlock 3>&1 2>> $ErrorLog | Out-File -Append $SuccessLog"
@@ -360,6 +367,12 @@ function Send-Email {
     if ($BackupRetryTimeout -lt 1) {
         $BackupRetryTimeout = 15
         '[[Config]] Warning - $BackupRetryTimeout is not setup correctly in config.ps1.' | Tee-Object -Append $ErrorLog | Tee-Object -Append $SuccessLog | Write-Host
+    }
+
+    # Backwards compatibility for $ForceResticUnlock
+    if ($null -eq $ForceResticUnlock) {
+        $ForceResticUnlock = $true
+        '[[Config]] Warning - $ForceResticUnlock is not set. Define $ForceResticUnlock in config.ps1.' | Tee-Object -Append $ErrorLog | Tee-Object -Append $SuccessLog | Write-Host
     }
 
     $status = "SUCCESS"
